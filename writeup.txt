@@ -1,0 +1,87 @@
+LAB1
+* Tuple.java: asList() is to convert an array or multiple parameters into a List collection
+  TupleDesc.java: isInstance() is to check if the specified object is compatible with the instance assigned to the class
+  Catalog.java: ConcurrentHashMap is thread safe
+                UUID.randomUUID() generates a unique identification code
+  RecordId.java: instanceof is a binary operator in Java, with objects on the left and classes on the right; When the object is created by the right class or subclass, return true; Otherwise, return false
+  HeapPage.java: floor() is to round down
+                 ceil() is to round up
+
+* no "import" other APIs;
+
+* It took two or three days sporadically to finish the all Lab 1. Most of the places are relatively simple; but HeapFileIterator is hard for me.
+  I haven't been exposed to JAVA languange before so I can understand some basic function after searching.
+
+
+LAB2
+* BTreeFile.java: 
+    splitLeafPage(): Create New Page: Creates a blank leaf node page for the split tuple.
+                      Tuple migration: Move half of the tuples in the original leaf node to the new leaf node, ensuring that both nodes have approximately the same number of tuples.
+                      Update pointers: If there is a right sibling node on the original node, you need to update the pointer to ensure that the link relationship between the sibling nodes is correct.
+                      Insert Parent Node: Inserts a new entry into the parent node of the original node, which is the keyword of the first tuple in the new node and points to the newly split child node.
+                      Update the parent pointer: If the split operation affects the root node, you may need to create a new root node and update the root pointer of the B+ tree.
+                      Back to the insertion page: Determine which child node the tuple should be inserted into based on the comparison between the keywords and the middle keywords of the tuple to be inserted.
+    mergeLeafPages(): Add all nodes of the right sibling to the left node: Iterate through all tuples of the right node, removing each tuple from the right node and inserting it into the left node through an iterator.
+                      Update Right Brother: First get the ID of the right brother, if the right brother does not exist, set the right brother pointer of the left node to null, if the right brother exists, set the right brother pointer of the left node to the ID of the right brother, and set the left brother pointer of the right brother to the ID of the left node.
+                      Leave the right brother blank in the header: Call the setEmptyPage method to set the right brother page to empty.
+                      Delete entries in the parent node: Call the deleteParentEntry method to delete entries related to the two nodes in the parent node.
+                      Put the left node and the parent node into the dirty pages cache: Put the IDs of the left node and the parent node and the corresponding page objects into the dirtypages hash table.
+  HeapPage.java: 
+     deleteTuple(): Check if a given tuple matches the current page, including whether the attributes match, whether the type is the same, and whether the page ID is the same. If these conditions are not met, a DbException will be thrown, indicating that the tuple is not on the current page.Next, it checks if the slot corresponding to the given tuple ID has been used. If it is not used, a DbException will be thrown, indicating that the tuple slot is already empty.
+It then marks the slot corresponding to the given tuple ID as unused and sets the slot content to null to remove the tuple.
+     insertTuple(): First, it checks if the current page is full. If the page is full, a DbException will be thrown, indicating that no new tuples can be inserted.Next, it checks if the type of a given tuple matches the current page. If there is no match, a DbException will be thrown, indicating that the types do not match.
+It then goes through all the slots on the page to find the ones that are not being used. Once an unused slot is found, it marks the slot as used and sets the record ID of the tuple to the current page ID and slot index. Finally, place the tuple into the found slot to complete the insertion.
+  BufferPool.java: 
+     insertTuple(): It obtains the corresponding database file (DbFile) based on the table ID.It then inserts the given tuple into the database file and returns the inserted page. The page is then flushed to the cache so that subsequent operations can access the latest data.
+     deleteTuple(): It obtains the table ID based on the record ID of the tuple and queries the database file corresponding to the table.It then removes the given tuple from the database file and returns the deleted page. The page is then flushed to the cache so that subsequent operations can access the latest data.
+
+* import java.util.concurrent.ConcurrentHashMap;
+  import java.util.ArrayList;
+  import java.util.LinkedList;
+  import java.util.List;
+
+* It took two days sporadically to finish the all Lab 2. I couldn't pass the system test of BTreeFileDeleteTest.java and BTreeFileInsertTest.java but I don't know how to solve this problem.
+
+
+LAB3
+* Join.java: 
+     fetchNext(): Obtain tuples that meet the connection conditions from the two child iterators (child1 and child2) and merge them into a new tuple return. If there is no tuple that satisfies the condition, null is returned.
+  IntegerAggregator.java: set some private classes in public class IntegerAggregator.
+  BufferPool.java: 
+     private void eviction(){
+      // 淘汰尾部节点
+      LinkedNode node = removeTail();
+      // 移除缓存中的记录
+      pageStore.remove(node.pageId);
+    }
+
+* no "import" other APIs;
+* It took two days sporadically to finish the all Lab 3. I don't understand 2.5&2.6 clearly.
+
+
+LAB4
+* TableStats.java: 
+     estimateSelectivity() is to estimate the selectivity based on the given field index, operator, and constant values.
+  JoinOptimizer.java: 
+     orderJoins() is to sort the given connection nodes so that the best order is chosen when executing the query. It does this by enumerating all possible subset sizes and calculating the optimal cost for each subset. It then adds the optimal plan to the planCache and prints the graphical plan if needed.
+     enumerateSubsets() and dfs():
+     In each recursive call, first check if the size of the path is equal to the target subset size. If it is, then convert the current path to a new hash set and add it to the subset set ELS.
+     Then go back and end the current recursive branch.If the current index curIdx is equal to the size of the target subset, it means that all elements have been traversed and the current recursive branch is returned.
+     Next, add the element corresponding to the current index to the beginning of the path, and then continue to call dfs recursively, passing in the same arguments, but adding the current index by one. This will attempt to include the current element.
+     After the recursive call, you need to backtrack to remove the element you just added from the path. Then call dfs again recursively, passing in the same arguments, but still adding the current index by one. This attempts to include the current element.
+     With such a recursive and backtracking process, all possible subset combinations can be generated and stored in the subset set ELS. Finally, a subset set of ELS is returned as the result.
+
+* no "import" other APIs;
+* It took three days sporadically to finish the all Lab 4.
+
+
+LAB5
+* BufferPool.java:
+     class LockManager
+     acquiredLock is to obtain a lock on the specified page
+     releaseLock is to release the lock on the specified page that is held by the specified transaction
+     isHoldLock is to determine whether a specified transaction holds a lock on a specified page
+     completeTransaction is to release all locks held by the transaction after the transaction completes
+* no "import" other APIs;
+* It took three days sporadically to finish the all Lab 5.But I can not pass LockingTest or TransactionTest seemingly.
+
